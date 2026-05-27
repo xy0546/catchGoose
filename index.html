@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抓大鹅游戏（30秒测试版）</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF6B6B',
+                        secondary: '#4ECDC4',
+                        dark: '#2C3E50',
+                        light: '#F7FFF7',
+                    },
+                    fontFamily: {
+                        cute: ['"Comic Sans MS"', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .goose-hover {
+                filter: drop-shadow(0 0 8px rgba(255,107,107,0.7));
+            }
+            .pop {
+                animation: pop 0.3s ease-out;
+            }
+            .float {
+                animation: float 3s ease-in-out infinite;
+            }
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(0); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+    </style>
+</head>
+<body class="font-cute bg-gradient-to-br from-blue-50 to-cyan-100 min-h-screen m-0 p-0 overflow-hidden">
+    <div id="game-container" class="relative w-full h-screen max-w-4xl mx-auto bg-white/80 backdrop-blur-md rounded-xl shadow-2xl overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 bg-gradient-to-r from-primary to-secondary text-white p-3 sm:p-4 flex justify-between items-center z-30 shadow-md">
+            <div class="text-lg sm:text-2xl font-bold flex items-center">
+                <i class="fa fa-gamepad mr-2"></i> 抓大鹅（30秒测试）
+            </div>
+            <div class="flex gap-4 sm:gap-6">
+                <div class="text-lg sm:text-xl font-bold">
+                    ⏱️ <span id="timer">30</span>
+                </div>
+                <div class="text-lg sm:text-xl font-bold">
+                    🎯 <span id="score">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 游戏背景图 -->
+        <div id="game-area" class="relative w-full h-full bg-[url('https://img.icons8.com/clouds/200/grass.png')] bg-repeat z-10">
+        </div>
+
+        <!-- 结束弹窗 -->
+        <div id="game-over" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
+            <div class="bg-white rounded-2xl p-8 sm:p-10 text-center shadow-2xl transform transition-all">
+                <h2 class="text-3xl sm:text-4xl font-bold text-primary mb-4">🎮 游戏结束 🎮</h2>
+                <p class="text-xl sm:text-2xl text-dark mb-2">你抓到了</p>
+                <p class="text-4xl sm:text-5xl font-bold text-primary my-4" id="final-score">0</p>
+                <p class="text-lg sm:text-xl text-dark mb-6">只调皮大鹅！</p>
+                <button id="restart-btn" class="bg-gradient-to-r from-primary to-secondary text-white border-none py-3 px-8 rounded-full text-lg sm:text-xl font-bold cursor-pointer transition-all hover:scale-105 active:scale-95 shadow-lg">
+                    再玩一次
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let timeLeft = 30;
+        let gameActive = false;
+        let timerInterval;
+
+        // ==============================================
+        // 🔥 这里放你所有的大鹅图片（可无限添加）
+        // 格式：PNG 透明背景
+        // ==============================================
+        const gooseImages = [
+            "goose1.png",
+            "goose2.png",
+            "goose3.png",
+            "goose4.png",
+            "goose5.png"
+        ];
+        
+        const gameArea = document.getElementById('game-area');
+        const scoreElement = document.getElementById('score');
+        const timerElement = document.getElementById('timer');
+        const gameOverElement = document.getElementById('game-over');
+        const finalScoreElement = document.getElementById('final-score');
+        const restartBtn = document.getElementById('restart-btn');
+        
+        function startGame() {
+            score = 0;
+            timeLeft = 30;
+            gameActive = true;
+            gameOverElement.classList.add('hidden');
+            updateScore();
+            updateTimer();
+            createGoose();
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimer();
+                if (timeLeft <= 0) endGame();
+            }, 1000);
+        }
+        
+        function endGame() {
+            clearInterval(timerInterval);
+            gameActive = false;
+            finalScoreElement.textContent = score;
+            gameOverElement.classList.remove('hidden');
+            const allGeese = document.querySelectorAll('.goose');
+            allGeese.forEach(goose => goose.remove());
+        }
+        
+        // 随机获取一张大鹅图片
+        function getRandomGooseImage() {
+            const randomIndex = Math.floor(Math.random() * gooseImages.length);
+            return gooseImages[randomIndex];
+        }
+        
+        function createGoose() {
+            if (!gameActive) return;
+            
+            const oldGoose = document.querySelector('.goose');
+            if (oldGoose) oldGoose.remove();
+            
+            const goose = document.createElement('div');
+            const size = Math.floor(Math.random() * 60) + 60;
+            const maxX = gameArea.clientWidth - size;
+            const maxY = gameArea.clientHeight - size;
+            const x = Math.floor(Math.random() * maxX);
+            const y = Math.floor(Math.random() * maxY);
+            
+            goose.className = "goose absolute cursor-pointer transition-all duration-200 float hover:goose-hover";
+            goose.style.width = `${size}px`;
+            goose.style.height = `${size}px`;
+            goose.style.left = `${x}px`;
+            goose.style.top = `${y}px`;
+            
+            // 🔥 随机图片
+            const randomImg = getRandomGooseImage();
+            goose.innerHTML = `<img src="${randomImg}" class="w-full h-full object-contain" alt="大鹅">`;
+            
+            goose.onclick = catchGoose;
+            gameArea.appendChild(goose);
+        }
+        
+        function catchGoose(e) {
+            if (!gameActive) return;
+            const goose = e.currentTarget;
+            goose.classList.add('pop');
+            score++;
+            updateScore();
+            
+            setTimeout(() => {
+                createGoose();
+            }, 300);
+        }
+        
+        function updateScore() {
+            scoreElement.textContent = score;
+        }
+        
+        function updateTimer() {
+            timerElement.textContent = timeLeft;
+        }
+        
+        restartBtn.addEventListener('click', startGame);
+        window.addEventListener('load', startGame);
+    </script>
+</body>
+</html>
