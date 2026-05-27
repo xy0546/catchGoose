@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>抓大鹅游戏（30秒测试版）</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -48,8 +48,8 @@
         }
     </style>
 </head>
-<body class="font-cute bg-gradient-to-br from-blue-50 to-cyan-100 min-h-screen m-0 p-0 overflow-hidden">
-    <div id="game-container" class="relative w-full h-screen max-w-4xl mx-auto bg-white/80 backdrop-blur-md rounded-xl shadow-2xl overflow-hidden">
+<body class="font-cute bg-gradient-to-br from-blue-50 to-cyan-100 min-h-screen m-0 p-5 flex items-center justify-center">
+    <div id="game-container" class="relative w-full max-w-4xl max-h-[90vh] aspect-[9/16] sm:aspect-[16/9] mx-auto bg-white/80 backdrop-blur-md rounded-xl shadow-2xl overflow-hidden">
         <div class="absolute top-0 left-0 right-0 bg-gradient-to-r from-primary to-secondary text-white p-3 sm:p-4 flex justify-between items-center z-30 shadow-md">
             <div class="text-lg sm:text-2xl font-bold flex items-center">
                 <i class="fa fa-gamepad mr-2"></i> 抓大鹅（30秒测试）
@@ -88,10 +88,7 @@
         let gameActive = false;
         let timerInterval;
 
-        // ==============================================
-        // 🔥 这里放你所有的大鹅图片（可无限添加）
-        // 格式：PNG 透明背景
-        // ==============================================
+        // 本地图片路径（使用你已准备好的5张图）
         const gooseImages = [
             "goose1.png",
             "goose2.png",
@@ -132,7 +129,6 @@
             allGeese.forEach(goose => goose.remove());
         }
         
-        // 随机获取一张大鹅图片
         function getRandomGooseImage() {
             const randomIndex = Math.floor(Math.random() * gooseImages.length);
             return gooseImages[randomIndex];
@@ -157,9 +153,9 @@
             goose.style.left = `${x}px`;
             goose.style.top = `${y}px`;
             
-            // 🔥 随机图片
             const randomImg = getRandomGooseImage();
-            goose.innerHTML = `<img src="${randomImg}" class="w-full h-full object-contain" alt="大鹅">`;
+            <!-- pointer-events-none 禁止图片触发点击，解决手机端点开大图问题 -->
+            goose.innerHTML = `<img src="${randomImg}" class="w-full h-full object-contain pointer-events-none" alt="大鹅">`;
             
             goose.onclick = catchGoose;
             gameArea.appendChild(goose);
